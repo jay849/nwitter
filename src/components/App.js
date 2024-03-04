@@ -9,26 +9,23 @@ function App() {
 
   useEffect(() => {
     authService.onAuthStateChanged((user) => {
-      if (user) {
+      if (user){
         setIsLoggedIn(user);
         setUserObj(user);
-      } else {
+      }
+      else{
         setIsLoggedIn(false);
       }
       setInit(true);
     });
   }, []);
 
-  return (
+  return(
     <>
-      {init ? (
-      <AppRouter isLoggedIn={isLoggedIn} userObj={userObj} />
-      ) : (
-        "initializing..." 
-      )}
-      {/* <footer>&copy;{new Date().getFullYear()} Nwitter</footer> */}
+    {init ? <AppRouter isLoggedIn={isLoggedIn} userObj={userObj} /> : "initializing..."}
+
     </>
-  )
-}
+  ) ;
+};
 
 export default App;

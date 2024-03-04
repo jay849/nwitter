@@ -1,35 +1,26 @@
 import { dbService, storageService } from "fbase";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
-import { ref, deleteObject } from "firebase/storage";
+import { deleteObject, ref } from "firebase/storage";
 import { useState } from "react";
 
 const Nweet = ({ nweetObj, isOwner }) => {
-    const [editing, setEditing] = useState(false);
-    const [newNweet, setNewNweet] = useState(nweetObj.text);
-/* 
-    const onDeleteClick = async () => {
+    const [ editing, setEnditing] = useState(false);
+    const [ newNweet, setNewNweet] = useState(nweetObj.text);
+
+    const onDeleteClick =  async () => {
         const ok = window.confirm("삭제하시겠습니까?");
-        console.log(ok);
-        if (ok) {
-            console.log(nweetObj.id);
-            const data = await deleteDoc(doc(dbService, "nweets", nweetObj.id));
-            console.log(data);
-        }
-    };
- */
-    const onDeleteClick = async () => {
-        const ok = window.confirm("삭제하시겠습니까?");
-        if (ok) {
+        if(ok) {
             await deleteDoc(doc(dbService, "nweets", nweetObj.id));
-            if (nweetObj.attachmentUrl !=="") {
-                /* const fileRef = ref(storageService, nweetObj.attachmentUrl);
+            // console.log(data); 
+
+            if (nweetObj.attachmentUrl !== "")
+                                /* const fileRef = ref(storageService, nweetObj.attachmentUrl);
                 await deleteObject(fileRef); */
                 await deleteObject(ref(storageService, nweetObj.attachmentUrl));
-            }
         }
     };
 
-    const toggleEditing = () => setEditing((prev) => !prev);
+    const toggleEditing = () => setEnditing((prev) => !prev);
 
     const onChange = (event) => {
         const {
@@ -40,12 +31,11 @@ const Nweet = ({ nweetObj, isOwner }) => {
 
     const onSubmit = async (event) => {
         event.preventDefault();
-        // console.log(nweetObj.id, newNweet);
-        await updateDoc(doc(dbService, "nweets", nweetObj.id), { text: newNweet });
-        setEditing(false);
-    }
+        await updateDoc(doc(dbService, "nweets", nweetObj.id), {text: newNweet});
+        setEnditing(false);
+    };
 
-    return (
+    return(
         <div>
             {editing ? (
                 <>
@@ -56,18 +46,18 @@ const Nweet = ({ nweetObj, isOwner }) => {
                     <button onClick={toggleEditing}>Cancel</button>
                 </>
             ) : (
-                <>
-                    <h4>{nweetObj.text}</h4>
-                    {nweetObj.attachmentUrl && (
-                        <img src={nweetObj.attachmentUrl} width="50px" height="50px" />
-                    )}
-                    {isOwner && (
-                        <>
-                            <button onClick={onDeleteClick}>Delete Nweet</button>
-                            <button onClick={toggleEditing}>Edit Nweet</button>
-                        </>
-                    )}
-                </>
+            <>
+                <h4>{nweetObj.text}</h4>
+                {nweetObj.attachmentUrl && (
+                    <img src={nweetObj.attachmentUrl} width="50px" height="50px" />
+                )}
+                {isOwner && (
+                    <>
+                        <button onClick={onDeleteClick}>Delete Nweet</button>
+                        <button onClick={toggleEditing}>Edit Nweet</button>
+                    </>
+                )}
+            </>
             )}
         </div>
     );
