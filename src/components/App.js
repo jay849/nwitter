@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AppRouter from "components/Router";
 import { authService } from "fbase";
+import { onAuthStateChanged } from "firebase/auth";
 
 function App() {
   const [init, setInit] = useState(false);
@@ -8,39 +9,46 @@ function App() {
   const [userObj, setUserObj] = useState(null);
 
   useEffect(() => {
-    authService.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(authService, (user) => {
       if (user) {
-        setIsLoggedIn(user);
         setUserObj({
           uid: user.uid,
           displayName: user.displayName,
           updateProfile: (args) => user.updateProfile(args),
         });
-      }
-      else{
-        setIsLoggedIn(false);
+      } else {
+        setUserObj(null);
       }
       setInit(true);
     });
+
+    return () => unsubscribe(); // cleanup 함수에서 unsubscribe
   }, []);
 
   const refreshUser = () => {
-    setUserObj(authService.currentUser);
-  }
+    const user = authService.currentUser;
+    setUserObj({
+      uid: user.uid,
+      displayName: user.displayName,
+      updateProfile: (args) => user.updateProfile(args),
+    })
+  };
 
-  return(
+
+
+  return (
     <>
-    {init ? (<AppRouter
-                refreshUser={refreshUser}
-                isLoggedIn={isLoggedIn}
-                userObj={userObj}
-            />
-            ) : (
-              "initializing..."
-            )}
+      {init ? (<AppRouter
+                  refreshUser={refreshUser}
+                  isLoggedIn={Boolean(userObj)}
+                  userObj={userObj}
+      />
+      ) : (
+        "initializing..."
+      )}
 
     </>
-  ) ;
+  );
 };
 
 export default App;

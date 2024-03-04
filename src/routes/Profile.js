@@ -22,15 +22,20 @@ const Profile = ({ userObj, refreshUser }) => {
             target: { value },
         } = event;
         setNewDisplayName(value);
-    };
+    };    
 
     const onSubmit = async (event) => {
         event.preventDefault();
         if (userObj.displayName !== newDisplayName) {
             try {
-                await updateProfile(userObj, { displayName: newDisplayName });
-                refreshUser();
-                console.log("프로필 이름이 성공적으로 업데이트되었습니다.");
+                const user = authService.currentUser;
+                if (user) {
+                    await updateProfile(user, { displayName: newDisplayName });
+                    refreshUser();
+                    console.log("프로필 이름이 성공적으로 업데이트되었습니다.");
+                } else {
+                    console.error("사용자가 인증되지 않았습니다.");
+                }
             } catch (error) {
                 console.error("프로필 업데이트 중 오류가 발생했습니다:", error);
             }
