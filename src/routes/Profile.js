@@ -3,46 +3,52 @@ import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Nweet from "components/Nweet";
+import { updateProfile } from "firebase/auth";
 
 // 로그아웃 signOut() 이용!! 
-const Profile = ({ userObj }) => {
+const Profile = ({ userObj, refreshUser }) => {
 
-    const [nweets, setNweets] = useState([]);
-
+    // const [nweets, setNweets] = useState([]);
     const navigate = useNavigate();
+    const [newDisplayName, setNewDisplayName] = useState(userObj.displayName);
 
     const onLogOutClick = () => {
         authService.signOut();
         navigate("/")
     };
-
-    const getMyNweets = async () => {
-        // const nweets = await collection(dbService, "nweets");
-        const q = query(
-            collection(dbService, "nweets"),
-            where("creatorId", "==" , userObj.uid),
-            orderBy("createdAt", "asc")
-        );
-
-        const querySnapshot = await getDocs(q);
-        console.log(querySnapshot);
-        const nweets = [];
-        querySnapshot.forEach((doc) => {
-            nweets.push(doc.data());
-            console.log(doc.data());
-        });
-        // console.log(nweets);
-        setNweets(nweets);
+    
+    const onChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        setNewDisplayName(value);
     };
 
-    useEffect( () => {
-        getMyNweets();
-    }, []);
+    const onSubmit = async (event) => {
+        event.preventDefault();
+        if (userObj.displayName !== newDisplayName) {
+            try {
+                await updateProfile(userObj, { displayName: newDisplayName });
+                refreshUser();
+                console.log("프로필 이름이 성공적으로 업데이트되었습니다.");
+            } catch (error) {
+                console.error("프로필 업데이트 중 오류가 발생했습니다:", error);
+            }
+        }
+    };
 
     return (
         <>
+            <form onSubmit={onSubmit}>
+                <input
+                    onChange={onChange}
+                    type="text"
+                    placeholder="Display name"
+                />
+                <input type="submit" value="Update Profile" />
+            </form>
             <button onClick={onLogOutClick}>Log Out</button>
-            <div>
+            {/* <div>
                 {nweets.map((nweet) => (
                     <Nweet 
                         key={nweet.id} 
@@ -50,7 +56,7 @@ const Profile = ({ userObj }) => {
                         isOwner={nweet.creatorId === userObj.uid}
                     />
                 ))}
-            </div>
+            </div> */}
         </>
     );
 
